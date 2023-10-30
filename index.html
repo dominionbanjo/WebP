@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script type="text/javascript">
+      google.charts.load("current", { packages: ["corechart"] });
+      google.charts.setOnLoadCallback(drawChart);
+
+      var chartData = [
+        ["Time", "DEVICE 1", "DEVICE 2", "DEVICE 3"],
+        ["0", 0, 0, 0],
+      ];
+
+      const socket = new WebSocket("wss://myserver-0q44.onrender.com");
+      // const socket = new WebSocket("ws://localhost:8080");
+
+      // Define individual time variables for each voltage series
+      let time1 = 0;
+      let time2 = 0;
+      let time3 = 0;
+
+      socket.addEventListener("message", (event) => {
+        const newData = JSON.parse(event.data);
+
+        // Increment time for each voltage series independently
+        time1 += 0.2;
+        time2 += 0.6; // Adjust the increment for each series
+        time3 += 0.8;
+
+        chartData.push([
+          newData.time,
+          newData.value1 + Math.sin(time1) * 24,
+          newData.value2 + Math.sin(time2) * 14 + 8,
+          newData.value3 + Math.sin(time3) * 6 + 16,
+        ]);
+        drawChart();
+      });
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable(chartData);
+
+        var options = {
+          title: "VOLTAGE DATA MEASUREMENT",
+          curveType: "function",
+          legend: { position: "bottom" },
+        };
+
+        var chart = new google.visualization.LineChart(
+          document.getElementById("curve_chart")
+        );
+
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="curve_chart" style="width: 1700px; height: 500px"></div>
+  </body>
+</html>
